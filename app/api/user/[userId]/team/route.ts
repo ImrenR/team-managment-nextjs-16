@@ -1,6 +1,5 @@
 import { checkDatabasePermission, getCurrentUser } from "@/app/lib/auth";
-import { User } from "@/app/types";
-import { Role } from "@prisma/client";
+import { Role } from "@/app/types";
 import { NextRequest, NextResponse } from "next/server";
 import {  prisma } from "@/app/lib/db";
 export async function PATCH(
