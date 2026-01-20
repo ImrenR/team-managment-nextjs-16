@@ -1,4 +1,4 @@
-import { checkDatabasePermission, getCurrentUser } from "@/app/lib/auth";
+import { getCurrentUser } from "@/app/lib/auth";
 import { Role } from "@/app/types";
 import { NextRequest, NextResponse } from "next/server";
 import {  prisma } from "@/app/lib/db";
@@ -10,9 +10,9 @@ export async function PATCH(
 ) {
   try {
     const { userId}= await context.params;
-    const user = await getCurrentUser();
+    const currentUser = await getCurrentUser();
 
-    if(!user || !checkDatabasePermission(user, Role.ADMIN)){
+    if(!currentUser|| currentUser.role !== Role.ADMIN){
       return NextResponse.json(
         {
             error: "you are not authorized to assign team",
@@ -20,26 +20,36 @@ export async function PATCH(
     {status : 401}
   );
     }
-    const {teamId}=await request.json();
-    if(teamId){
-      const team = await prisma.team.findUnique({
-        where: {id:teamId},
-      });
-      if(!team){
+
+// Prevent users from changing their own role
+if(userId === currentUser.id){
+   return NextResponse.json(
+        {
+            error: "you can not changed your own role",
+      },
+    {status : 401}
+  );
+}
+
+const {role} =await request.json();
+
+// Validate role
+const validateRole =[Role.USER,Role.MANAGER];
+
+      if(!validateRole.includes(role)){
         return NextResponse.json(
           {
-            error: "Team not found",
+            error: "Invalid role or you cannot have more than one Admin role user",
           },
           {status: 404}
         );
       }
-    }
 
     //Update users team assignment
     const updateUser = await prisma.user.update({
       where: {id:userId},
       data: {
-        teamId:teamId,
+        role,
       },
       include: {
         team:true,
@@ -47,13 +57,12 @@ export async function PATCH(
     });
       return NextResponse.json({
         user:updateUser,
-        message: teamId
-        ? "User assigned to team successfully"
-        : "User removed from team successfully"
+        message:`User role update to ${role} successfully`,
       })
   } catch (error) {
-    console.error("Team assignment error:" , error);
-    if(error instanceof Error && error.message.includes("Record to update not found"))
+    console.error("Role assignment error:" , error);
+    if(error instanceof Error 
+      && error.message.includes("Record to update not found"))
       
       return NextResponse.json({
         error: "User not found",

@@ -1,65 +1,35 @@
-
-import bcrypt from "bcryptjs"
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import { prisma } from "./db"; // prisma burada import edildi
 import { User } from "../types";
-import { Role } from "@prisma/client";
-import { prisma } from "@/app/lib/db";
-
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
-export const hashPassword = async(password:string):Promise<string> => {
-  return bcrypt.hash(password,12);
+export const hashPassword = (password: string) => bcrypt.hash(password, 12);
+export const verifyPassword = (password: string, hash: string) => bcrypt.compare(password, hash);
 
-}
-
-export const verifyPassword = async(
-  password:string,
-  hashPassword:string
-):Promise<boolean> => {
-  return bcrypt.compare(password,hashPassword);
-
-};
-
-export const generateToken = (userId:string): string => {
-  return jwt.sign({userId}, JWT_SECRET, {expiresIn: "7d"});
-}
-
-export const verifyToken = (token:string): {userId:string}=> {
-  return jwt.verify(token, JWT_SECRET) as {userId:string};
-}
-
+export const generateToken = (userId: string) => jwt.sign({ userId }, JWT_SECRET, { expiresIn: "7d" });
+export const verifyToken = (token: string) => jwt.verify(token, JWT_SECRET) as { userId: string };
 
 export const getCurrentUser = async (): Promise<User | null> => {
   try {
     const cookieStore = await cookies();
-    const token= cookieStore.get("token")?.value;
-    if(!token)
-      return null;
-    const decode=verifyToken(token);
+    const token = cookieStore.get("token")?.value;
+    if (!token) return null;
 
-    const userFromDb = await prisma?.user.findUnique ({
-      where : {id : decode.userId},
+    const decoded = verifyToken(token);
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      include: { team: { include: { members: true } } },
     });
-    if(!userFromDb) return null;
-    const {password, ...user} =userFromDb;
-    return user as User;
-  } catch (error) {
-    console.error("Error :", error);
+
+    if (!user) return null;
+
+    const { password, ...rest } = user;
+    return rest as User;
+  } catch (err) {
+    console.error("Error getting current user:", err);
     return null;
   }
 };
-
-export const checkDatabasePermission = (
-  user: User,
-  requiredRole : Role
-): boolean => {
-  const roleHoerarchy = {
-    [Role.GUEST]:0,
-    [Role.USER]:1,
-    [Role.MANAGER]:2,
-    [Role.ADMIN]:3,
-  };
-  return roleHoerarchy[user.role] >= roleHoerarchy[requiredRole];
-}
