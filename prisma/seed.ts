@@ -1,79 +1,59 @@
 import { hashPassword } from "@/app/lib/auth";
 import { PrismaClient, Role } from "@prisma/client";
-import { clearLine } from "readline";
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("Starting database seed...");
-  // Create Teams
 
-  const teams = await Promise.all([
-    prisma.team.create({
-      data: {
-        name: "Engineering",
-        description: "Software development team",
-        code: "ENG-2025",
-      },
-    }),
+  // Takımları sil ve yeniden oluştur
+  await prisma.user.deleteMany({});
+  await prisma.team.deleteMany({});
 
-    prisma.team.create({
-      data: {
-        name: "Marketing",
-        description: "Marketing and sales team",
-        code: "MKT-2025",
-      },
-    }),
-    prisma.team.create({
-      data: {
-        name: "Operations",
-        description: "Bussiness operations team",
-        code: "OPS-2025",
-      },
-    }),
-  ]);
+  const engineering = await prisma.team.create({
+    data: { name: "Engineering", description: "Software dev team", code: "ENG-2025" },
+  });
 
-  //Create sample users
+  const marketing = await prisma.team.create({
+    data: { name: "Marketing", description: "Marketing team", code: "MKT-2025" },
+  });
 
-  const sampleUsers = [
-    {
-      name: "John Developer",
+  const operations = await prisma.team.create({
+    data: { name: "Operations", description: "Operations team", code: "OPS-2025" },
+  });
+
+  // Admin kullanıcı
+  await prisma.user.create({
+    data: {
+      email: "imrenrahbay@gmail.com",
+      name: "Imren Rahbay",
+      password: await hashPassword("123456"), // Bu şifre ile login edeceğiz
+      role: Role.ADMIN,
+    },
+  });
+
+  // Örnek kullanıcılar
+  await prisma.user.create({
+    data: {
       email: "john@company.com",
-      team: teams[0],
+      name: "John Developer",
+      password: await hashPassword("123456"),
       role: Role.MANAGER,
+      teamId: engineering.id,
     },
-    {
-      name: "Jane Developer",
-      email: "jane@company.com",
-      team: teams[0],
-      role: Role.USER,
-    },
-    {
-      name: "Bob Marketer",
-      email: "bob@company.com",
-      team: teams[1],
-      role: Role.MANAGER,
-    },
-    {
-      name: "Alice Sales",
-      email: "alice@company.com",
-      team: teams[1],
-      role: Role.USER,
-    },
-  ];
+  });
 
-  for (const userData of sampleUsers) {
-    await prisma.user.create({
-      data: {
-        email: userData.email.toLocaleLowerCase(),
-        name: userData.name,
-        password: await hashPassword("123456"),
-        role: userData.role,
-        teamId: userData.team.id,
-      },
-    });
-  }
-  console.log("Database seeded successfully!")
+  await prisma.user.create({
+    data: {
+      email: "jane@company.com",
+      name: "Jane Developer",
+      password: await hashPassword("123456"),
+      role: Role.USER,
+      teamId: engineering.id,
+    },
+  });
+
+  console.log("Database seeded successfully!");
 }
 
 main()
