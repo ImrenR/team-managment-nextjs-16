@@ -3,6 +3,7 @@ import { PrismaClient, Role } from "@prisma/client";
 import { clearLine } from "readline";
 
 const prisma = new PrismaClient();
+
 async function main() {
   console.log("Starting database seed...");
   // Create Teams
@@ -64,7 +65,7 @@ async function main() {
   for (const userData of sampleUsers) {
     await prisma.user.create({
       data: {
-        email: userData.email,
+        email: userData.email.toLocaleLowerCase(),
         name: userData.name,
         password: await hashPassword("123456"),
         role: userData.role,
