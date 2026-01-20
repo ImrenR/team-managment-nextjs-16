@@ -1,5 +1,6 @@
 import { getCurrentUser } from "@/app/lib/auth";
 import { Role } from "@/app/types";
+import {prisma} from "@/app/lib/db";
 import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -41,7 +42,7 @@ if(role){
   where.role = role as Role;
 }
 
-const users = await prisma?.user.findMany({
+const users = await prisma.user.findMany({
   where,
   select: {
     id:true,
@@ -54,9 +55,15 @@ const users = await prisma?.user.findMany({
         name:true,
       },
     },
+    createdAt:true,
   },
+  orderBy:{createdAt: "desc"}
 });
+return NextResponse.json({users});
   } catch (error) {
-    
+    console.error("Get users error", error);
+    return NextResponse.json({
+      error:"Internal server error, Something went wrong!"
+    }, {status:500})
   }
 }
