@@ -1,5 +1,6 @@
 import { hashPassword } from "@/app/lib/auth";
 import { PrismaClient, Role } from "@prisma/client";
+import { clearLine } from "readline";
 
 const prisma = new PrismaClient();
 async function main() {
@@ -71,6 +72,7 @@ async function main() {
       },
     });
   }
+  console.log("Database seeded successfully!")
 }
 
 main()
