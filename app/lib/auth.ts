@@ -8,20 +8,27 @@ const JWT_SECRET = process.env.JWT_SECRET as string;
 
 export const hashPassword = async (password: string): Promise<string> => {
   return bcrypt.hash(password, 12);
-};
+}; 
+// The password is hashed here (one-way hashing for security)
+// bcrypt.hash is a function from the bcrypt library
+// It converts the plain text password into a secure hash
+// 4=> very weak 10=> good 12=>so strong
 
 export const verifyPassword = async (
   password: string,
   hashPassword: string,
 ): Promise<boolean> => {
   return bcrypt.compare(password, hashPassword);
-};
+};//returns boolean
+// when users enters their pass in string, bcrypt compares the hash with password
+// hash = locker
 
-//!Mantık: Login sonrası client’a JWT gönderilir 
-// → auth header veya cookie’de saklanır
+
 export const generateToken = (userId: string): string => {
   return jwt.sign({userId}, JWT_SECRET, {expiresIn: "7d"});
-};
+};// Logic: After login, a JWT is sent to the client
+// It is stored in the auth header or in a cookie
+
 
 export const verifyToken = (token: string): {userId : string} => {
   return jwt.verify(token, JWT_SECRET) as {userId:string};
