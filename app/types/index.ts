@@ -24,5 +24,5 @@ export interface Team{
   description?: string | null;
   members:User[];
   createdAt: Date;
-  updateAt: Date;
+  updatedAt: Date;
 }
