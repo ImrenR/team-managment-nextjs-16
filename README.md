@@ -2,6 +2,8 @@
 
 This project is a **team management application** for internal company use. Users have different roles and can manage teams and their members based on their permissions.
 
+![App Preview](./public/img.png)
+
 ## Features
 
 - User registration and login system (JWT-based)
