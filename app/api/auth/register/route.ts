@@ -1,13 +1,13 @@
 import { generateToken, hashPassword } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/db";
-import { Role } from "@prisma/client";
+import { Role } from "@/app/types";
 import { NextRequest, NextResponse } from "next/server";
 
 
 export async function POST(request:NextRequest) {
   try {
+
     const{name,email,password, teamCode} = await request.json();
-    
     // Validate required fields
     if(!name || !email || !password) {
    return NextResponse.json (
@@ -15,27 +15,27 @@ export async function POST(request:NextRequest) {
       error: "Name, email & password are required or not valid"
     },
     {status : 400}
-   );
-   
-    }
-   // Find existing user
+   ); }
 
+   // Find existing user
    const existingUser = await prisma.user.findUnique({
     where : {email},
    });
+
    if(existingUser){
     return NextResponse.json(
       {
         error : "User with this email address exists",
       },
       {status : 409}
-    );
-   }
+    );}
+
     let teamId: string | undefined;
     if(teamCode){
       const team = await prisma.team.findUnique({
         where : {code: teamCode}
       });
+
       if(!team) {
         return NextResponse.json(
       {
@@ -49,8 +49,7 @@ export async function POST(request:NextRequest) {
 
     const hashedPassword = await hashPassword(password);
 
-    // First user beome ADMIN, others become USER
-
+    // First user become ADMIN, others become USER
     const userCount = await prisma.user.count();
     const role=userCount === 0 ? Role.ADMIN : Role.USER;
      
@@ -94,10 +93,13 @@ response.cookies.set("token", token, {
 });
 
 return response;
+
   } catch (error) {
     console.error("Registration failed ");
+
     return NextResponse.json({
       error: "Internal server error, Something went wrong"
-    }, {status: 500})
+    }, 
+    {status: 500})
   }
 }
