@@ -3,8 +3,9 @@
 This project is a **team management application** for internal company use. Users have different roles and can manage teams and their members based on their permissions.
 
 ![App Preview](./public/img.png)
-![App Preview](./public/img2.png)
 ![App Preview](./public/img3.png)
+![App Preview](./public/img2.png)
+
 
 ## Features
 
