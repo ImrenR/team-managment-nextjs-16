@@ -26,7 +26,9 @@ export const verifyPassword = async (
 
 export const generateToken = (userId: string): string => {
   return jwt.sign({userId}, JWT_SECRET, {expiresIn: "7d"});
-};// Logic: After login, a JWT is sent to the client
+};                //payload //imza anahtari //suresi
+// payload:the info we input inside the token (Bu userId ye sahip kullanici giris yapti)
+// Logic: After login, a JWT is sent to the client
 // It is stored in the auth header or in a cookie
 
 
@@ -37,18 +39,26 @@ export const verifyToken = (token: string): {userId : string} => {
 export const getCurrentUser=async(): Promise<User | null> => {
 try {
   const cookieStore = await cookies(); //Next server tarafinda cookielar alir
+  
   const token = cookieStore.get("token")?.value; // token yoksa null don
+  
   if(!token) return null;
 
-  const decode = verifyToken(token); // token decode edilir
-
+  const decode = verifyToken(token); // token gercek mi? icinden userId al
+//Bu fonksiyon sunu doner : {userId:"abc123"}
   const userFromDb = await prisma.user.findUnique({ //Db den kullaniciyi cek
-    where : {id: decode.userId},
+    
+    where : {id: decode.userId}, //where Prisma API nin kurali
+  // bir kayit ariyorsan bana where ile soyle
+  //“id’si token’dan çıkan userId olan user’ı bul”
   });
   if(!userFromDb) return null; //Kullanici DB de yoksa null
+
   const{password, ...user} = userFromDb; // passwordu geri donme
-  return user as User;
-} catch (error) {
+  // password haric her seyi geri dondur, password client e gitmez engellenir
+  return user as User; // bu obje benim user interface imle uyumludur
+} 
+catch (error) {
   console.error("Error",error);
   return null;
 }
@@ -57,13 +67,18 @@ try {
 export const checkUserPermission= (
   user: User,
   requiredRole:Role
-
+// bu kullanici bu islemi yapmaya yetkili mi
+// kullanici login yapmis olabilir ama yetkiye sahip degil
 ): boolean => {
-  const roleHoerarchy = {
+  const roleHoerarchy = { // her role e bir seviye verdik
     [Role.GUEST]:0,
     [Role.USER]:1,
     [Role.MANAGER]:2,
-    [Role.ADMIN]:3,
+    [Role.ADMIN]:3,//buyuk sayi daha yuksek yetki
   };
   return roleHoerarchy[user.role] >= roleHoerarchy[requiredRole];
-}
+}// ts kodudur ,// bu kullanicinin rolu.   //bu route i sadece manager ve ustu kullanabilir
+// requiredRole: Role e atandi min yetki seviyesi belli en az user oalbilir
+// user.role = Role.USER = 1
+// requiredRole = Role.MANAGER = 2
+// 1>= 2 => false => kullanici yetkisiz
