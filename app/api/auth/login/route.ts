@@ -5,24 +5,42 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
+
     if (!email || !password)
-      return NextResponse.json({ error: "Email & password required" }, { status: 400 });
+      return NextResponse.json(
+    { error: "Email & password required" }, 
+    { status: 400 });
 
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    const userFromDb = await prisma.user.findUnique(
+      { where: { email },
+    include:{team: true},
+   });
 
-    const valid = await verifyPassword(password, user.password);
-    if (!valid) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    if (!userFromDb) {
+      return NextResponse.json(
+      { error: "Invalid credentials" }, 
+      { status: 401 }
+    );
+  }
 
-    const token = generateToken(user.id);
+    const isValidPassword = await verifyPassword(password, userFromDb.password);
+    if (!isValidPassword)
+       {return NextResponse.json(
+      { error: "Invalid credentials" }, 
+      { status: 401 }
+    );
+  }
+
+    const token = generateToken(userFromDb.id);
 
     const response = NextResponse.json({
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        teamId: user.teamId,
+        id: userFromDb.id,
+        email: userFromDb.email,
+        name: userFromDb.name,
+        role: userFromDb.role,
+        teamId: userFromDb.teamId,
+        team:userFromDb.team,
         token,
       },
     });
