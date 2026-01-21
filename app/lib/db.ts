@@ -1,13 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 
-declare global {
-  var prisma: PrismaClient | undefined;
+export const prisma=new PrismaClient();
+
+//Database helper function
+
+export async function checkDatabaseConnection():Promise<boolean>{
+  try {
+    await prisma.$queryRaw`Select 1`;
+    return true;
+  } catch (error) {
+    console.error(`Database connection failed:", ${error}`);
+    return false;
+  }
 }
-
-export const prisma =
-  global.prisma ||
-  new PrismaClient({
-    log: ["query"],
-  });
-
-if (process.env.NODE_ENV !== "production") global.prisma = prisma;
