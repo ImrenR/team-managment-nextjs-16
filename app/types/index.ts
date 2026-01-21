@@ -14,7 +14,7 @@ role:Role;
 teamId?:string; // when we create the user, the user might not assigned on any team, so optional
 team?:Team;
 createdAt: Date;
-updateAt: Date;
+updatedAt: Date;
 
 }
 
