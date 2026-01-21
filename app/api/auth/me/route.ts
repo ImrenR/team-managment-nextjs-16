@@ -16,6 +16,7 @@ export async function GET(requests: NextRequest) {
     
   } catch (error) {
     console.error("Error : ", error);
+    
     return NextResponse.json({
       error: "Internal server error, Something went wrong!"
     },
