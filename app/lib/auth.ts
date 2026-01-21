@@ -44,7 +44,8 @@ try {
   
   if(!token) return null;
 
-  const decode = verifyToken(token); // token gercek mi? icinden userId al
+  const decode = verifyToken(token); 
+  // token gercek mi? icinden userId al
 //Bu fonksiyon sunu doner : {userId:"abc123"}
   const userFromDb = await prisma.user.findUnique({ //Db den kullaniciyi cek
     
