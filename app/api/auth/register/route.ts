@@ -67,7 +67,8 @@ teamId = team.id;
       email,
       password:hashedPassword,
       teamId,
-      role
+      role,
+      
     },
     include: {
       team: true,
@@ -86,7 +87,8 @@ const response = NextResponse.json({
     name:user.name,
     role:user.role,
     teamId:user.teamId,
-    team:user.team
+    team:user.team,
+    token // those part will be appear on body when we hit the post
   }
 });
 
