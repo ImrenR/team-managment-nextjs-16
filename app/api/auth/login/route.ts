@@ -1,6 +1,5 @@
 import { generateToken, verifyPassword } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/db";
-import { Role } from "@/app/types";
 import { NextRequest, NextResponse } from "next/server";
 
 
