@@ -12,7 +12,8 @@ response.cookies.set("token","",{
   secure:process.env.NODE_ENV === "production",
   sameSite:"lax",
   maxAge:0,
-})
+});
+return response;
 }
 
 
