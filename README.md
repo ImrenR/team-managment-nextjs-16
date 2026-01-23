@@ -5,6 +5,9 @@ This project is a **team management application** for internal company use. User
 ![App Preview](./public/img.png)
 ![App Preview](./public/img3.png)
 ![App Preview](./public/img2.png)
+![App Preview](./public/postgreSQL.png)
+![App Preview](./public/postgreSQL1.png)
+
 
 
 ## Features
