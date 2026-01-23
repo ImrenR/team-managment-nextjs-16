@@ -2,56 +2,44 @@ generator client {
   provider = "prisma-client-js"
 }
 
-
-datasource db{
+datasource db {
   provider = "postgresql"
-  url        =env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id           String    @id @default(cuid())
-  name         String
-  email        String    @unique
-  password     String
-  role         Role      @default(USER)
-  teamId       String? 
-  team         Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  teamId    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  team      Team?    @relation(fields: [teamId], references: [id])
 
-
-//indexes 
-
-@@index([email])
-@@index([role])
-@@index([teamId])
-@@index([name])
-
-//map 
-
-@@map("user")
+  @@index([email])
+  @@index([role])
+  @@index([teamId])
+  @@index([name])
+  @@map("user")
 }
 
 model Team {
-  id           String    @id @default(cuid())
-  name         String    @unique
-  description  String?
-  code         String    @unique
-  members      User[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  code        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  members     User[]
 
-
-
-//map 
-
-@@map("teams")
+  @@map("teams")
 }
 
-
-enum Role{
-ADMIN
-MANAGER
-USER
-GUEST
+enum Role {
+  ADMIN
+  MANAGER
+  USER
+  GUEST
 }
